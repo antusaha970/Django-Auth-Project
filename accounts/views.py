@@ -12,7 +12,7 @@ from django.contrib.auth import authenticate
 
 class AccountView(APIView):
     def get_permissions(self):
-        if self.request.method == 'PUT' or self.request.method == "GET" or self.request.method == "DELETE":
+        if self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == "GET" or self.request.method == "DELETE":
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -36,6 +36,16 @@ class AccountView(APIView):
         data = request.data
         serializer = AccountSerializer(
             instance=user, data=data, many=False, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        serializer = AccountSerializer(
+            instance=user, data=data, many=False, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
